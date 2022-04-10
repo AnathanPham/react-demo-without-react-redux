@@ -3,22 +3,16 @@ import "./App.css";
 import store from "./store";
 
 function App() {
-  const { count, timestamp } = store.getState();
+  const { count } = store.getState();
   // 函数组件没有提供class组件的forceUpdate，我们模拟这个方法
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  // 点击按钮后我们向store派发一个action
   const handleAddCount = useCallback(() => {
     store.dispatch({
       type: "ADD",
-      payload: undefined,
     });
   }, []);
-  const handleSetTime = useCallback(() => {
-    store.dispatch({
-      type: "TIMESTAMP",
-      payload: Date.now(),
-    });
-  }, []);
-  // 订阅
+  // 订阅store更新
   useEffect(() => {
     const callback = () => {
       const newState = store.getState();
@@ -29,17 +23,14 @@ function App() {
         forceUpdate();
       }
     };
-    return store.subscribe(callback);
+    // 组件销毁及时取掉订阅
+    return () => store.subscribe(callback);
   }, [count]);
-
+  
   return (
     <div className="App">
-      <h2>手动绑定React和Redux</h2>
       <p>count:{count}</p>
       <button onClick={handleAddCount}>add count</button>
-      <p>timestamp:{timestamp}</p>
-      <p className="tiny">如果不订阅store，store更新后不会引起React更新</p>
-      <button onClick={handleSetTime}>set timestamp</button>
     </div>
   );
 }
